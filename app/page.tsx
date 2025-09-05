@@ -592,6 +592,7 @@ export default function Home() {
               models={filteredModels}
               languageModel={languageModel}
               onLanguageModelChange={handleLanguageModelChange}
+              isLoadingModels={isLoadingModels}
             />
             <ChatSettings
               languageModel={languageModel}
@@ -603,20 +604,22 @@ export default function Home() {
         </div>
         {fragment && (
           <Preview
-          teamID={userTeam?.id}
-          accessToken={session?.access_token}
-          selectedTab={currentTab}
-          onSelectedTabChange={setCurrentTab}
-          isChatLoading={isLoading}
-          isPreviewLoading={isPreviewLoading}
-          fragment={fragment}
-          result={executionResult || result as ExecutionResult}
-          onClose={() => setFragment(undefined)}
-          code={fragment?.code || ''}
-          executeCode={executeCode}
-          selectedFile={selectedFile} onSave={function (path: string, content: string): void {
-            throw new Error('Function not implemented.')
-          } }        />
+            teamID={userTeam?.id}
+            accessToken={session?.access_token}
+            selectedTab={currentTab}
+            onSelectedTabChange={setCurrentTab}
+            isChatLoading={isLoading}
+            isPreviewLoading={isPreviewLoading}
+            fragment={fragment}
+            result={executionResult || result as ExecutionResult}
+            onClose={() => setFragment(undefined)}
+            code={fragment?.code || ''}
+            executeCode={executeCode}
+            selectedFile={selectedFile} 
+            onSave={function (path: string, content: string): void {
+              throw new Error('Function not implemented.')
+            }}        
+          />
         )}
       </div>
     </main>
