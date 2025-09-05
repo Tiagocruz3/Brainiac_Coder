@@ -1,6 +1,22 @@
 {
   "models": [
     {
+      "id": "gpt-5",
+      "provider": "OpenAI",
+      "providerId": "openai",
+      "name": "GPT-5",
+      "multiModal": true,
+      "isBeta": true
+    },
+    {
+      "id": "gpt-5-mini",
+      "provider": "OpenAI", 
+      "providerId": "openai",
+      "name": "GPT-5 Mini",
+      "multiModal": true,
+      "isBeta": true
+    },
+    {
       "id": "gpt-4.5-preview",
       "provider": "OpenAI",
       "providerId": "openai",
