@@ -20,9 +20,11 @@ export async function fetchOpenAIModels(apiKey?: string): Promise<LLMModel[]> {
     const key = apiKey || process.env.OPENAI_API_KEY
     
     if (!key) {
-      console.warn('No OpenAI API key available for fetching models')
+      console.log('No OpenAI API key available for fetching models')
       return []
     }
+
+    console.log('Fetching OpenAI models with API key:', key.substring(0, 10) + '...')
 
     const response = await fetch('https://api.openai.com/v1/models', {
       headers: {
@@ -32,20 +34,24 @@ export async function fetchOpenAIModels(apiKey?: string): Promise<LLMModel[]> {
     })
 
     if (!response.ok) {
+      console.error('OpenAI API error:', response.status, response.statusText)
       throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`)
     }
 
     const data: OpenAIModelsResponse = await response.json()
+    console.log('Received models from OpenAI:', data.data.length)
     
     // Filter and transform OpenAI models to our format
     const openaiModels: LLMModel[] = data.data
       .filter(model => {
         // Only include chat completion models
-        return model.id.includes('gpt') || 
-               model.id.includes('o1') || 
-               model.id.includes('text-davinci') ||
-               model.id === 'gpt-4o' ||
-               model.id === 'gpt-4o-mini'
+        const isValidModel = model.id.includes('gpt') || 
+                            model.id.includes('o1') || 
+                            model.id.includes('o3') ||
+                            model.id === 'gpt-4o' ||
+                            model.id === 'gpt-4o-mini'
+        console.log(`Model ${model.id}: ${isValidModel ? 'included' : 'filtered out'}`)
+        return isValidModel
       })
       .map(model => ({
         id: model.id,
@@ -62,6 +68,7 @@ export async function fetchOpenAIModels(apiKey?: string): Promise<LLMModel[]> {
         return priority - priorityB
       })
 
+    console.log('Processed OpenAI models:', openaiModels.map(m => m.id))
     return openaiModels
   } catch (error) {
     console.error('Error fetching OpenAI models:', error)

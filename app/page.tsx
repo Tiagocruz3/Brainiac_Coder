@@ -13,7 +13,8 @@ import { useAuth } from '@/lib/auth'
 import { Project, createProject, saveMessage, getProjectMessages, generateProjectTitle, getProject } from '@/lib/database'
 import { Message, toAISDKMessages, toMessageImage } from '@/lib/messages'
 import { LLMModelConfig } from '@/lib/models'
-import modelsList from '@/lib/models.json'
+import modelsListStatic from '@/lib/models.json'
+import { getCachedOpenAIModels } from '@/lib/openai-models'
 import { FragmentSchema, fragmentSchema as schema } from '@/lib/schema'
 import { createSupabaseBrowserClient } from '@/lib/supabase-browser'
 import templates, { TemplateId } from '@/lib/templates'
@@ -69,15 +70,43 @@ export default function Home() {
   
   const [currentProject, setCurrentProject] = useState<Project | null>(null)
   const [isLoadingProject, setIsLoadingProject] = useState(false)
+  const [availableModels, setAvailableModels] = useState(modelsListStatic.models)
+  const [isLoadingModels, setIsLoadingModels] = useState(false)
 
   const { session } = useAuth(setAuthDialogCallback, setAuthViewCallback)
   const { userTeam } = useUserTeam()
 
+  // Load OpenAI models dynamically
+  useEffect(() => {
+    const loadOpenAIModels = async () => {
+      if (!languageModel.apiKey) return
+      
+      setIsLoadingModels(true)
+      try {
+        const openaiModels = await getCachedOpenAIModels(languageModel.apiKey)
+        
+        // Filter out OpenAI models from static list and add dynamic ones
+        const nonOpenAIModels = modelsListStatic.models.filter(m => m.providerId !== 'openai')
+        const combinedModels = [...openaiModels, ...nonOpenAIModels]
+        
+        setAvailableModels(combinedModels)
+        console.log('Loaded dynamic OpenAI models:', openaiModels.length)
+      } catch (error) {
+        console.error('Failed to load OpenAI models:', error)
+        // Fallback to static models
+        setAvailableModels(modelsListStatic.models)
+      } finally {
+        setIsLoadingModels(false)
+      }
+    }
+
+    loadOpenAIModels()
+  }, [languageModel.apiKey])
 
   const { executeCode: enhancedExecuteCode } = useEnhancedChat({
     userID: session?.user?.id,
     teamID: userTeam?.id,
-    model: modelsList.models.find(m => m.id === languageModel.model)!,
+    model: availableModels.find(m => m.id === languageModel.model)!,
     config: languageModel,
     template: templates,
   })
@@ -90,13 +119,12 @@ export default function Home() {
   };
 
   const filteredModels = modelsList.models.filter((model) => {
-    if (process.env.NEXT_PUBLIC_HIDE_LOCAL_MODELS) {
-      return model.providerId !== 'ollama'
-    }
-    return true
+  const filteredModels = availableModels.filter((model) => {
+    // Only show OpenAI and Anthropic models
+    return model.providerId === 'openai' || model.providerId === 'anthropic'
   })
 
-  const currentModel = filteredModels.find(
+  const currentModel = availableModels.find(
     (model) => model.id === languageModel.model,
   )
   const lastMessage = messages[messages.length - 1]
@@ -565,6 +593,7 @@ export default function Home() {
               models={filteredModels}
               languageModel={languageModel}
               onLanguageModelChange={handleLanguageModelChange}
+              isLoadingModels={isLoadingModels}
             />
             <ChatSettings
               languageModel={languageModel}

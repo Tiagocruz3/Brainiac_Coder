@@ -22,6 +22,7 @@ export function ChatPicker({
   models,
   languageModel,
   onLanguageModelChange,
+  isLoadingModels,
 }: {
   templates: Templates
   selectedTemplate: 'auto' | TemplateId
@@ -29,6 +30,7 @@ export function ChatPicker({
   models: LLMModel[]
   languageModel: LLMModelConfig
   onLanguageModelChange: (config: LLMModelConfig) => void
+  isLoadingModels?: boolean
 }) {
   // Feature flags
   const { enabled: hasBetaAiModels } = useFeatureFlag('beta-ai-models', false)
@@ -89,9 +91,10 @@ export function ChatPicker({
           name="languageModel"
           defaultValue={languageModel.model}
           onValueChange={(e) => onLanguageModelChange({ model: e })}
+          disabled={isLoadingModels}
         >
           <SelectTrigger className="whitespace-nowrap border-none shadow-none focus:ring-0 px-0 py-0 h-6 text-xs">
-            <SelectValue placeholder="Language model" />
+            <SelectValue placeholder={isLoadingModels ? "Loading models..." : "Language model"} />
           </SelectTrigger>
           <SelectContent>
             {Object.entries(
