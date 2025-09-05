@@ -279,16 +279,11 @@ export default function Home() {
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  async function handleSubmitAuth(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    
-    if (!chatInput.trim()) {
-      return
-    }
-    
+
     if (!session) {
-      setAuthDialog(true)
-      return
+      return setAuthDialog(true)
     }
 
     if (isLoading) {
@@ -363,6 +358,8 @@ export default function Home() {
     if (selectedTemplate !== 'auto') {
       analytics.trackTemplateSelected(selectedTemplate, 'manual')
     }
+    
+    // Revenue tracking handled by analytics service
     
     posthog.capture('chat_submit', {
       template: selectedTemplate,
@@ -466,83 +463,7 @@ export default function Home() {
       return
     }
     
-    if (isLoading) {
-      stop()
-    }
-
-    const currentInput = chatInput
-    const currentFiles = [...files]
-    setChatInput('')
-    setFiles([])
-    setCurrentTab('code')
-
-    const content: Message['content'] = [{ type: 'text', text: currentInput }]
-    
-    const images = await toMessageImage(currentFiles)
-    if (images.length > 0) {
-      images.forEach((image) => {
-        content.push({ type: 'image', image })
-      })
-    }
-
-    const newMessage: Message = {
-      role: 'user',
-      content,
-    }
-    const updatedMessages = [...messages, newMessage]
-    setMessages(updatedMessages)
-
-    const templateToSend =
-      selectedTemplate === 'auto'
-        ? templates
-        : { [selectedTemplate]: templates[selectedTemplate] }
-
-    submit({
-      userID: session?.user?.id,
-      teamID: userTeam?.id,
-      messages: toAISDKMessages(updatedMessages),
-      template: templateToSend,
-      model: currentModel,
-      config: languageModel,
-    })
-
-    if (!currentProject) {
-      try {
-        const title = await generateProjectTitle(currentInput)
-        if (supabase) {
-          const newProject = await createProject(supabase, title, selectedTemplate === 'auto' ? undefined : selectedTemplate)
-          if (newProject) {
-            setCurrentProject(newProject)
-          }
-        }
-      } catch (error) {
-        console.error('Error creating project:', error)
-      }
-    }
-
-    // Enhanced chat analytics
-    setMessagesCount(prev => prev + 1)
-    
-    const promptLength = currentInput.length
-    const hasImages = currentFiles.length > 0
-    
-    analytics.trackPromptSubmission(
-      currentInput,
-      languageModel.model || 'unknown',
-      promptLength,
-      hasImages,
-      messages.length > 0 ? 'conversation' : 'none'
-    )
-    
-    // Track template selection
-    if (selectedTemplate !== 'auto') {
-      analytics.trackTemplateSelected(selectedTemplate, 'manual')
-    }
-    
-    posthog.capture('chat_submit', {
-      template: selectedTemplate,
-      model: languageModel.model,
-    })
+    handleSubmitAuth(e)
   }
 
   const executeCode = async (code: string) => {
