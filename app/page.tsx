@@ -118,7 +118,6 @@ export default function Home() {
     }
   };
 
-  const filteredModels = modelsList.models.filter((model) => {
   const filteredModels = availableModels.filter((model) => {
     // Only show OpenAI and Anthropic models
     return model.providerId === 'openai' || model.providerId === 'anthropic'
@@ -593,7 +592,6 @@ export default function Home() {
               models={filteredModels}
               languageModel={languageModel}
               onLanguageModelChange={handleLanguageModelChange}
-              isLoadingModels={isLoadingModels}
             />
             <ChatSettings
               languageModel={languageModel}
@@ -603,6 +601,7 @@ export default function Home() {
             />
           </ChatInput>
         </div>
+        {fragment && (
           <Preview
           teamID={userTeam?.id}
           accessToken={session?.access_token}
@@ -618,6 +617,7 @@ export default function Home() {
           selectedFile={selectedFile} onSave={function (path: string, content: string): void {
             throw new Error('Function not implemented.')
           } }        />
+        )}
       </div>
     </main>
   )
