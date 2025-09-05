@@ -346,13 +346,6 @@
       "multiModal": false
     },
     {
-      "id": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-      "provider": "Together AI",
-      "providerId": "togetherai",
-      "name": "Llama 3.1 70B",
-      "multiModal": false
-    },
-    {
       "id": "grok-4",
       "provider": "xAI",
       "providerId": "xai",
@@ -392,27 +385,6 @@
       "provider": "DeepSeek",
       "providerId": "deepseek",
       "name": "DeepSeek V3",
-      "multiModal": false
-    },
-    {
-      "id": "llama3.1",
-      "provider": "Ollama",
-      "providerId": "ollama",
-      "name": "Llama 3.1",
-      "multiModal": false
-    },
-    {
-      "id": "mistral-nemo",
-      "provider": "Ollama",
-      "providerId": "ollama",
-      "name": "Mistral Nemo",
-      "multiModal": false
-    },
-    {
-      "id": "mistral-large",
-      "provider": "Ollama",
-      "providerId": "ollama",
-      "name": "Mistral Large",
       "multiModal": false
     }
   ]
