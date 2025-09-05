@@ -17,7 +17,6 @@ export function useAuth(
 
   useEffect(() => {
     if (!supabase) {
-      console.error('Supabase is not initialized - authentication will not work')
       setLoading(false)
       return
     }
