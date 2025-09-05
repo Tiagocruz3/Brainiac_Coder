@@ -451,6 +451,21 @@ export default function Home() {
     setCurrentPreview({ fragment: undefined, result: undefined })
   }
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    
+    if (!chatInput.trim()) {
+      return
+    }
+    
+    if (!session) {
+      setAuthDialog(true)
+      return
+    }
+    
+    handleSubmitAuth(e)
+  }
+
   const executeCode = async (code: string) => {
     const startTime = Date.now()
     const result = await enhancedExecuteCode(code)
@@ -538,7 +553,7 @@ export default function Home() {
             stop={stop}
             input={chatInput}
             handleInputChange={handleSaveInputChange}
-            handleSubmit={handleSubmitAuth}
+            handleSubmit={handleSubmit}
             isMultiModal={currentModel?.multiModal || false}
             files={files}
             handleFileChange={handleFileChange}
