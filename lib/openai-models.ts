@@ -17,14 +17,14 @@ export interface OpenAIModelsResponse {
  */
 export async function fetchOpenAIModels(apiKey?: string): Promise<LLMModel[]> {
   try {
-    const key = apiKey || process.env.OPENAI_API_KEY
+    const key = apiKey || process.env.NEXT_PUBLIC_OPENAI_API_KEY || process.env.OPENAI_API_KEY
     
     if (!key) {
       console.log('No OpenAI API key available for fetching models')
       return []
     }
 
-    console.log('Fetching OpenAI models with API key:', key.substring(0, 10) + '...')
+    console.log('Fetching OpenAI models from API...')
 
     const response = await fetch('https://api.openai.com/v1/models', {
       headers: {
@@ -34,22 +34,27 @@ export async function fetchOpenAIModels(apiKey?: string): Promise<LLMModel[]> {
     })
 
     if (!response.ok) {
-      console.error('OpenAI API error:', response.status, response.statusText)
+      const errorText = await response.text()
+      console.error('OpenAI API error:', response.status, response.statusText, errorText)
       throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`)
     }
 
     const data: OpenAIModelsResponse = await response.json()
     console.log('Received models from OpenAI:', data.data.length)
+    console.log('Available model IDs:', data.data.map(m => m.id).slice(0, 10))
     
     // Filter and transform OpenAI models to our format
     const openaiModels: LLMModel[] = data.data
       .filter(model => {
         // Only include chat completion models
-        const isValidModel = model.id.includes('gpt') || 
-                            model.id.includes('o1') || 
-                            model.id.includes('o3') ||
-                            model.id === 'gpt-4o' ||
-                            model.id === 'gpt-4o-mini'
+        const isValidModel = (
+          model.id.startsWith('gpt-') || 
+          model.id.startsWith('o1') || 
+          model.id.startsWith('o3') ||
+          model.id === 'gpt-4o' ||
+          model.id === 'gpt-4o-mini' ||
+          model.id === 'chatgpt-4o-latest'
+        ) && !model.id.includes('instruct') && !model.id.includes('base')
         console.log(`Model ${model.id}: ${isValidModel ? 'included' : 'filtered out'}`)
         return isValidModel
       })

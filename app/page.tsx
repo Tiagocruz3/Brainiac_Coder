@@ -79,18 +79,23 @@ export default function Home() {
   // Load OpenAI models dynamically
   useEffect(() => {
     const loadOpenAIModels = async () => {
-      if (!languageModel.apiKey) return
+      const apiKey = languageModel.apiKey || process.env.OPENAI_API_KEY
+      if (!apiKey) {
+        console.log('No OpenAI API key available for dynamic model loading')
+        return
+      }
       
       setIsLoadingModels(true)
       try {
-        const openaiModels = await getCachedOpenAIModels(languageModel.apiKey)
+        console.log('Loading OpenAI models with API key...')
+        const openaiModels = await getCachedOpenAIModels(apiKey)
         
         // Filter out OpenAI models from static list and add dynamic ones
         const nonOpenAIModels = modelsListStatic.models.filter(m => m.providerId !== 'openai')
         const combinedModels = [...openaiModels, ...nonOpenAIModels]
         
         setAvailableModels(combinedModels)
-        console.log('Loaded dynamic OpenAI models:', openaiModels.length)
+        console.log('Loaded dynamic OpenAI models:', openaiModels.length, openaiModels.map(m => m.name))
       } catch (error) {
         console.error('Failed to load OpenAI models:', error)
         // Fallback to static models
@@ -101,7 +106,7 @@ export default function Home() {
     }
 
     loadOpenAIModels()
-  }, [languageModel.apiKey])
+  }, [languageModel.apiKey]) // Will also trigger when component mounts
 
   const { executeCode: enhancedExecuteCode } = useEnhancedChat({
     userID: session?.user?.id,
